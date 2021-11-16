@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">Integration Demo</string>
+    <string name="app_name">IS &amp; Start.io</string>
     <string name="initializing">Initializing</string>
     <string name="show">Show</string>
     <string name="load">Load</string>
@@ -12,7 +12,4 @@
     <string name="rvButtonState">rvButtonState</string>
     <string name="isButtonState">isButtonState</string>
     <string name="owButtonState">owButtonState</string>
-
-
-
 </resources>

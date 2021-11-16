@@ -1,3 +1,5 @@
+*.iml
+
 #Android Java
 Android/Java/.gradle/*
 Android/Java/.idea/*
