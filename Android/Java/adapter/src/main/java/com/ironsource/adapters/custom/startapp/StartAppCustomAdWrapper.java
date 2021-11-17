@@ -3,7 +3,6 @@ package com.ironsource.adapters.custom.startapp;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
-import com.startapp.mediation.common.StartAppMediationExtras;
 import com.startapp.sdk.adsbase.StartAppAd;
 import com.startapp.sdk.adsbase.adlisteners.AdDisplayListener;
 import com.startapp.sdk.adsbase.adlisteners.AdEventListener;

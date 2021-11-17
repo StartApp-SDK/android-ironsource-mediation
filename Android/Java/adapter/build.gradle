@@ -15,7 +15,6 @@ android {
 
 dependencies {
     api 'com.ironsource.sdk:mediationsdk:7.1.12.1'
-    implementation files('libs/startapp-mediation-common.jar')
     // noinspection GradleDependency
     implementation 'com.startapp:inapp-sdk:[4.9,5)'
     // noinspection GradleDependency
