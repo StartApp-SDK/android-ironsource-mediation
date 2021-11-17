@@ -32,5 +32,7 @@ dependencies {
     //Make sure you also configure the AdNetworks in your dashboard.
     //For more information: http://developers.ironsrc.com/ironsource-mobile/android/mediation-networks-android/
 
+    // TODO in your project you should use dependency on Maven repository
+    // implementation 'com.startapp:ironsource-mediation:1.+'
     implementation project(':adapter')
 }

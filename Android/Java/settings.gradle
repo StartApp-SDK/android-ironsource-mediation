@@ -1,2 +1,4 @@
+rootProject.name = 'Start.io for IronSource'
+
 include ':adapter'
 include ':app'

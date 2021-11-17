@@ -25,3 +25,5 @@ dependencies {
     // noinspection GradleDependency
     implementation 'androidx.annotation:annotation:[1,2)'
 }
+
+apply from: "$rootDir/publish-mavencentral.gradle"
