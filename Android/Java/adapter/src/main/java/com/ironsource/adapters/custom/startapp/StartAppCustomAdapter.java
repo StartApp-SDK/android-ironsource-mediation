@@ -10,6 +10,7 @@ import androidx.annotation.Nullable;
 import com.ironsource.mediationsdk.adunit.adapter.BaseAdapter;
 import com.ironsource.mediationsdk.adunit.adapter.listener.NetworkInitializationListener;
 import com.ironsource.mediationsdk.adunit.adapter.utility.AdData;
+import com.startapp.sdk.adsbase.StartAppAd;
 import com.startapp.sdk.adsbase.StartAppSDK;
 
 import static com.ironsource.adapters.custom.startapp.BuildConfig.DEBUG;
@@ -40,7 +41,10 @@ public class StartAppCustomAdapter extends BaseAdapter {
         if (appId != null && appId.length() > 0) {
             String accountId = adData.getString(KEY_ACCOUNT_ID);
 
-            StartAppSDK.init(context.getApplicationContext(), accountId, appId);
+            StartAppAd.disableSplash();
+            StartAppAd.enableConsent(context, false);
+            StartAppSDK.addWrapper(context, "IronSource", getAdapterVersion());
+            StartAppSDK.init(context.getApplicationContext(), accountId, appId, null, false);
 
             if (listener != null) {
                 listener.onInitSuccess();
