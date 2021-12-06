@@ -9,6 +9,9 @@
 
 ## Setup IronSource
 
+**IMPORTANT**: Because IronSource Custom Adapters is still in beta-testing phase,
+you should [contact IronSource support][5] and ask them to enable Custom Adapters for your app.
+
 4. Register **Start.Io** [custom adapter][3] for your IronSource account
 
 ![Custom Adapter](images/02.png)
@@ -40,3 +43,4 @@ dependencies {
  [2]: https://support.start.io/hc/en-us/articles/202766743
  [3]: https://developers.is.com/ironsource-mobile/general/custom-adapter-setup
  [4]: https://github.com/StartApp-SDK/ironsource-mediation/blob/7f9fd526375f8f6a3da6fd2945c81460a7b36cd9/Android/Java/app/src/main/java/com/ironsource/ironsourcesdkdemo/DemoActivity.java#L37
+ [5]: https://ironsrc.formtitan.com/contact-us
