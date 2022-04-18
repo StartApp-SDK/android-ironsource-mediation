@@ -116,7 +116,7 @@ public class StartAppCustomRewardedVideo extends BaseRewardedVideo<StartAppCusto
 
                 rewardedVideoAdListener.onAdLoadFailed(errorType, ADAPTER_ERROR_INTERNAL, errorMessage);
             }
-        });
+        }, StartAppAd.AdMode.REWARDED_VIDEO);
     }
 
     @Nullable

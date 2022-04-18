@@ -40,6 +40,10 @@ class StartAppCustomAdWrapper {
         }
     }
 
+    void loadAd(@NonNull AdEventListener listener, StartAppAd.AdMode adMode) {
+        ad.loadAd(adMode, extras.getAdPreferences(), listener);
+    }
+
     void showAd(@NonNull AdDisplayListener listener) {
         ad.showAd(extras.getAdPreferences().getAdTag(), listener);
     }
