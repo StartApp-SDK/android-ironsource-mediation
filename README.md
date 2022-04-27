@@ -2,4 +2,4 @@
 
 [Android](Android/Java)
 
-[iOS](iOS/Swift)
+[iOS](https://github.com/StartApp-SDK/ios-ironsource-mediation)
