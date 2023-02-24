@@ -139,7 +139,7 @@ public class StartAppCustomInterstitial extends BaseInterstitial<StartAppCustomA
 
                 @Override
                 public void adDisplayed(Ad ad) {
-                    listener.onAdShowSuccess();
+                    listener.onAdOpened();
                 }
 
                 @Override
