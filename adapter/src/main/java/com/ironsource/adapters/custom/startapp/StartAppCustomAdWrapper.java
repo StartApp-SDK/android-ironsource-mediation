@@ -6,6 +6,7 @@ import androidx.annotation.Nullable;
 import com.startapp.sdk.adsbase.StartAppAd;
 import com.startapp.sdk.adsbase.adlisteners.AdDisplayListener;
 import com.startapp.sdk.adsbase.adlisteners.AdEventListener;
+import com.startapp.sdk.adsbase.adlisteners.VideoListener;
 
 class StartAppCustomAdWrapper {
     @NonNull
@@ -39,7 +40,16 @@ class StartAppCustomAdWrapper {
         }
     }
 
+    void loadAd(@NonNull AdEventListener listener, StartAppAd.AdMode adMode) {
+        ad.loadAd(adMode, extras.getAdPreferences(), listener);
+    }
+
     void showAd(@NonNull AdDisplayListener listener) {
+        ad.showAd(extras.getAdPreferences().getAdTag(), listener);
+    }
+
+    void showAd(@NonNull AdDisplayListener listener, VideoListener videoListener) {
+        ad.setVideoListener(videoListener);
         ad.showAd(extras.getAdPreferences().getAdTag(), listener);
     }
 }
