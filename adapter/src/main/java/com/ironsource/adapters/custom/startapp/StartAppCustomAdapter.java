@@ -41,10 +41,9 @@ public class StartAppCustomAdapter extends BaseAdapter {
         if (appId != null && appId.length() > 0) {
             String accountId = adData.getString(KEY_ACCOUNT_ID);
 
-            StartAppAd.disableSplash();
             StartAppAd.enableConsent(context, false);
-            StartAppSDK.addWrapper(context, "IronSource", getAdapterVersion());
             StartAppSDK.init(context.getApplicationContext(), accountId, appId, null, false);
+            StartAppSDK.enableMediationMode(context, "IronSource", getAdapterVersion());
 
             if (listener != null) {
                 listener.onInitSuccess();
