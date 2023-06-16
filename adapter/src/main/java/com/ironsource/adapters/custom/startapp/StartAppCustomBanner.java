@@ -1,6 +1,9 @@
 package com.ironsource.adapters.custom.startapp;
 
 import static com.ironsource.adapters.custom.startapp.BuildConfig.DEBUG;
+import static com.ironsource.mediationsdk.adunit.adapter.utility.AdapterErrorType.ADAPTER_ERROR_TYPE_INTERNAL;
+import static com.ironsource.mediationsdk.adunit.adapter.utility.AdapterErrorType.ADAPTER_ERROR_TYPE_NO_FILL;
+import static com.ironsource.mediationsdk.adunit.adapter.utility.AdapterErrors.ADAPTER_ERROR_INTERNAL;
 
 import android.app.Activity;
 import android.content.Context;
@@ -15,7 +18,6 @@ import androidx.annotation.Nullable;
 
 import com.ironsource.mediationsdk.ISBannerSize;
 import com.ironsource.mediationsdk.adunit.adapter.BaseBanner;
-import com.ironsource.mediationsdk.adunit.adapter.internal.listener.AdapterAdListener;
 import com.ironsource.mediationsdk.adunit.adapter.listener.BannerAdListener;
 import com.ironsource.mediationsdk.adunit.adapter.utility.AdData;
 import com.ironsource.mediationsdk.adunit.adapter.utility.AdapterErrorType;
@@ -35,7 +37,7 @@ import org.json.JSONObject;
 import java.util.Map;
 
 
-public class StartAppCustomBanner extends BaseBanner {
+public class StartAppCustomBanner extends BaseBanner<StartAppCustomAdapter> {
 
     public enum Mode {
         OFFERWALL,
@@ -164,7 +166,7 @@ public class StartAppCustomBanner extends BaseBanner {
                 JSONObject serverParameterJSON = new JSONObject(serverParameter);
                 jsonParameter = serverParameterJSON.getString(IronSourceConstants.EVENTS_CUSTOM_NETWORK_FIELD);
             } catch (JSONException e) {
-                Log.e(LOG_TAG, "serverParameter invalid" + e);
+                Log.e(LOG_TAG, "serverParameter invalid " + serverParameter);
             }
             if (jsonParameter != null) {
                 try {
@@ -258,115 +260,75 @@ public class StartAppCustomBanner extends BaseBanner {
 
             return prefs;
         }
-
-        public static class Builder {
-            @NonNull
-            final Bundle extras = new Bundle();
-
-            @NonNull
-            public Builder setAdTag(@NonNull String adTag) {
-                extras.putString(AD_TAG, adTag);
-                return this;
-            }
-
-            @NonNull
-            public Builder setInterstitialMode(@NonNull Mode interstitialMode) {
-                extras.putSerializable(INTERSTITIAL_MODE, interstitialMode);
-                return this;
-            }
-
-            @NonNull
-            public Builder setMinCPM(double cpm) {
-                extras.putDouble(MIN_CPM, cpm);
-                return this;
-            }
-
-            @NonNull
-            public Builder setNativeImageSize(@NonNull Size size) {
-                extras.putSerializable(NATIVE_IMAGE_SIZE, size);
-                return this;
-            }
-
-            @NonNull
-            public Builder setNativeSecondaryImageSize(@NonNull Size size) {
-                extras.putSerializable(NATIVE_SECONDARY_IMAGE_SIZE, size);
-                return this;
-            }
-
-            @NonNull
-            public Builder muteVideo() {
-                extras.putBoolean(MUTE_VIDEO, true);
-                return this;
-            }
-
-            @NonNull
-            public Builder enable3DBanner() {
-                extras.putBoolean(IS_3D_BANNER, true);
-                return this;
-            }
-
-            @NonNull
-            public Bundle toBundle() {
-                return extras;
-            }
-        }
     }
-
 
     static final String LOG_TAG = StartAppCustomBanner.class.getSimpleName();
 
     public StartAppCustomBanner(NetworkSettings networkSettings) {
         super(networkSettings);
-    }
-
-    public void destroyAd(AdData adData) {
+        if (DEBUG) {
+            Log.v(LOG_TAG, "StartAppCustomBanner created: ");
+        }
     }
 
     @Override
-    public void loadAd(AdData adData, Activity activity, ISBannerSize isBannerSize, AdapterAdListener listener) {
+    public void destroyAd(AdData adData) {
 
+    }
+
+    @Override
+    public void loadAd(@NonNull AdData adData,
+                       @NonNull Activity activity,
+                       @NonNull ISBannerSize bannerSize,
+                       @NonNull BannerAdListener bannerAdListener
+    ) {
         final Context context = activity;
         final int adWidthDp, adHeightDp;
 
-        adWidthDp = isBannerSize.getWidth();
-        adHeightDp = isBannerSize.getHeight();
+        adWidthDp = bannerSize.getWidth();
+        adHeightDp = bannerSize.getHeight();
 
         if (DEBUG) {
-            Log.v(LOG_TAG, "loadBannerAd: " + isBannerSize + " => " + adWidthDp + "x" + adHeightDp);
+            Log.d(LOG_TAG, "loadBannerAd: " + bannerSize + " => " + adWidthDp + "x" + adHeightDp +
+                    " ServerData: " + adData.getServerData() +
+                    "UnitData: " + adData.getAdUnitData());
         }
 
-        Extras extras = new Extras(adData.getAdUnitData(), adData.getServerData());
+        Extras extras = new Extras(adData.getConfiguration(), adData.getServerData());
 
         new BannerRequest(context)
-                .setAdFormat(isBannerSize.equals(ISBannerSize.RECTANGLE) ? BannerFormat.MREC : BannerFormat.BANNER)
+                .setAdFormat(bannerSize.equals(ISBannerSize.RECTANGLE) ? BannerFormat.MREC : BannerFormat.BANNER)
                 .setAdSize(adWidthDp, adHeightDp)
                 .setAdPreferences(extras.getAdPreferences())
                 .load(new BannerRequest.Callback() {
-                    @Nullable
-                    BannerAdListener bannerAdListener;
 
                     @Override
                     public void onFinished(@Nullable BannerCreator creator, @Nullable String error) {
                         if (creator != null) {
                             if (DEBUG) {
-                                Log.v(LOG_TAG, "loadBannerAd: onFinished: success");
+                                Log.v(LOG_TAG, "onFinished: success");
                             }
 
                             final View view = creator.create(context, new BannerListener() {
                                 @Override
                                 public void onReceiveAd(View view) {
-                                    bannerAdListener.onAdLoadSuccess(
-                                            view, new FrameLayout.LayoutParams(
-                                                    view.getWidth(),
-                                                    view.getHeight(),
-                                                    Gravity.CENTER
-                                            )
-                                    );
+                                    if (DEBUG) {
+                                        Log.v(LOG_TAG, "adReceived width: " + view.getWidth() + " height: " + view.getHeight());
+                                    }
                                 }
 
                                 @Override
                                 public void onFailedToReceiveAd(View view) {
                                     // none
+                                    if (DEBUG) {
+                                        Log.v(LOG_TAG, "onFailedToReceiveAd " + view);
+                                    }
+                                    AdapterErrorType errorType = "NO FILL".equals(error) ? ADAPTER_ERROR_TYPE_NO_FILL : ADAPTER_ERROR_TYPE_INTERNAL;
+                                    bannerAdListener.onAdLoadFailed(
+                                            errorType,
+                                            ADAPTER_ERROR_INTERNAL,
+                                            ""
+                                    );
                                 }
 
                                 @Override
@@ -375,9 +337,7 @@ public class StartAppCustomBanner extends BaseBanner {
                                         Log.v(LOG_TAG, "loadBannerAd: onImpression");
                                     }
 
-                                    if (bannerAdListener != null) {
-                                        bannerAdListener.onAdLoadSuccess(); // TODO is it impression?
-                                    }
+                                    bannerAdListener.onAdOpened();
                                 }
 
                                 @Override
@@ -386,36 +346,23 @@ public class StartAppCustomBanner extends BaseBanner {
                                         Log.v(LOG_TAG, "loadBannerAd: onClick");
                                     }
 
-                                    if (bannerAdListener != null) {
-                                        bannerAdListener.onAdClicked();
-                                    }
+                                    bannerAdListener.onAdClicked();
                                 }
                             });
-
+                            bannerAdListener.onAdLoadSuccess(
+                                    view, new FrameLayout.LayoutParams(
+                                            FrameLayout.LayoutParams.WRAP_CONTENT,
+                                            FrameLayout.LayoutParams.WRAP_CONTENT,
+                                            Gravity.CENTER
+                                    ));
                         } else {
                             if (DEBUG) {
                                 Log.w(LOG_TAG, "loadBannerAd: onFinished: error: " + error);
                             }
 
-                            listener.onAdLoadFailed(messageToError(error), 0, error);
+                            bannerAdListener.onAdLoadFailed(ADAPTER_ERROR_TYPE_INTERNAL, ADAPTER_ERROR_INTERNAL, error);
                         }
                     }
                 });
-    }
-
-    @NonNull
-    private static AdapterErrorType messageToError(@Nullable String message) {
-        message = message != null ? message : "Internal error";
-        boolean isNoFill = message.contains("204") || message.contains("Empty Response");
-        boolean isExpired = message.contains("504"); // TODO check code
-        AdapterErrorType result;
-        if (isNoFill) {
-            result = AdapterErrorType.ADAPTER_ERROR_TYPE_NO_FILL;
-        } else if (isExpired) {
-            result = AdapterErrorType.ADAPTER_ERROR_TYPE_AD_EXPIRED;
-        } else {
-            result = AdapterErrorType.ADAPTER_ERROR_TYPE_INTERNAL;
-        }
-        return result;
     }
 }
