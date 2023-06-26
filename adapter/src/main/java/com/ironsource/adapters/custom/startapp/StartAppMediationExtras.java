@@ -13,6 +13,9 @@ import com.startapp.sdk.adsbase.model.AdPreferences;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.util.Map;
+import java.util.Objects;
+
 // IMPORTANT: Never change this class! it was copied from
 // https://github.com/StartApp-SDK/android-mediation-common
 // If you need to make changes, please, do it in the original repo at first!
@@ -60,6 +63,26 @@ public class StartAppMediationExtras {
     public StartAppMediationExtras(@Nullable Bundle bundle, @Nullable String json, boolean nativeAd, boolean nativeAutoDownload) {
         adPreferences = parseAdPreferences(bundle, json, nativeAd, nativeAutoDownload);
     }
+
+    public StartAppMediationExtras(@Nullable Map<String, Object> customEventExtras, @Nullable String json) {
+        Bundle bundle = new Bundle();
+        String adTag = (String) customEventExtras.get(AD_TAG);
+        Boolean isVideoMuted = Boolean.parseBoolean((String) customEventExtras.get(MUTE_VIDEO));
+        Boolean is3DBanner = Boolean.parseBoolean((String) customEventExtras.get(IS_3D_BANNER));
+        if (customEventExtras.containsKey(MIN_CPM) && customEventExtras.get(MIN_CPM) != null) {
+            try {
+                Double minCPM =  Double.parseDouble((String) Objects.requireNonNull(customEventExtras.get(MIN_CPM)));
+                bundle.putDouble(MIN_CPM, minCPM);
+            } catch (Exception e) {
+                //ignore
+            }
+        }
+        bundle.putString(AD_TAG, adTag);
+        bundle.putBoolean(MUTE_VIDEO, isVideoMuted);
+        bundle.putBoolean(IS_3D_BANNER, is3DBanner);
+        adPreferences = parseAdPreferences(bundle, json, false, false);
+    }
+
 
     @NonNull
     private AdPreferences parseAdPreferences(
