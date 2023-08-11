@@ -8,6 +8,12 @@ def OSSRH_USERNAME = "ossrhUsername"
 def OSSRH_PASSWORD = "ossrhPassword"
 def SONATYPE_STAGING_PROFILE_ID = "sonatypeStagingProfileId"
 
+android {
+    publishing {
+        singleVariant('release')
+    }
+}
+
 // stub for sources, required by MavenCentral
 task sourcesJar(type: Jar) {
     archiveClassifier.set('sources')

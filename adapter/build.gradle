@@ -1,7 +1,7 @@
 apply plugin: 'com.android.library'
 
 android {
-    compileSdkVersion 33
+    compileSdk 33
 
     defaultConfig {
         minSdkVersion 16
@@ -11,6 +11,7 @@ android {
     defaultConfig {
         buildConfigField 'String', 'VERSION_NAME', "\"${VERSION_NAME as String}\""
     }
+    namespace 'com.ironsource.adapters.custom.startapp'
 }
 
 dependencies {
