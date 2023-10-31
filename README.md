@@ -18,13 +18,22 @@ you should [contact IronSource support][5] and ask them to enable Custom Adapter
 
 Network key: **15b99c96d**
 
-Field **Ad Tag** is mandatory, but if you don't want to use it, you can set value **default**.
+<img width="609" alt="Screenshot 2023-10-31 at 17 44 18" src="https://github.com/StartApp-SDK/android-ironsource-mediation/assets/37342219/0a8da125-4dff-4a61-bf47-a046d174ede1">
+
+Сlick “Enter key” and save (image above)
+
+<img width="613" alt="account ID screenshot" src="https://github.com/StartApp-SDK/android-ironsource-mediation/assets/37342219/aa742215-7e52-4e2c-98f3-721365d08d83">
+
+Set your Account ID, choose "Rate base revenue" and save (image above)
+
+
+5. Field **Ad Tag** is mandatory, but if you don't want to use it, you can set value **default**.
 
 ![Interstitial setup](images/03.png)
 
 ## Setup project
 
-5. Add dependency on Start.Io IronSource Mediation library
+6. Add dependency on Start.Io IronSource Mediation library
 
 ```
 dependencies {
@@ -35,7 +44,7 @@ dependencies {
 
 ## Testing
 
-6. Use your IronSource **App Key** with this demo project. Put your value on [this line][4] then compile and launch.
+7. Use your IronSource **App Key** with this demo project. Put your value on [this line][4] then compile and launch.
 
 ![Test with your App Key](images/04.png)
 
