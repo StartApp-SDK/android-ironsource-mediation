@@ -10,29 +10,10 @@ def SONATYPE_STAGING_PROFILE_ID = "sonatypeStagingProfileId"
 
 android {
     publishing {
-        singleVariant('release')
+        singleVariant("release") {
+            withSourcesJar()
+        }
     }
-}
-
-// stub for sources, required by MavenCentral
-task sourcesJar(type: Jar) {
-    archiveClassifier.set('sources')
-    from file('build/intermediates/aar_main_jar/release/classes.jar')
-}
-
-// stub for java doc, required by MavenCentral
-task javadoc(type: Javadoc) {
-    failOnError false
-}
-
-task javadocJar(type: Jar, dependsOn: javadoc) {
-    archiveClassifier.set('javadoc')
-    from javadoc.destinationDir
-}
-
-artifacts {
-    archives sourcesJar
-    archives javadocJar
 }
 
 group = GROUP_ID
@@ -74,9 +55,6 @@ afterEvaluate {
                 } else {
                     artifact("$buildDir/libs/${project.getName()}-${version}.jar")
                 }
-
-                artifact sourcesJar
-                artifact javadocJar
 
                 pom {
                     name = ARTIFACT_NAME
