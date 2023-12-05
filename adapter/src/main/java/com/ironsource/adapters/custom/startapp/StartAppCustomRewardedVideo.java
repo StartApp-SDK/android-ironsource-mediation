@@ -52,7 +52,7 @@ public class StartAppCustomRewardedVideo extends BaseRewardedVideo<StartAppCusto
         }
         StartAppCustomAdWrapper wrapper = getWrapper(adData);
 
-        VideoListener videoListener = listener::onAdEnded;
+        VideoListener videoListener = listener::onAdRewarded;
 
         if (wrapper != null) {
             wrapper.showAd(new AdDisplayListener() {
