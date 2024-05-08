@@ -4,10 +4,8 @@ import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.DialogInterface;
 import android.graphics.Color;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import androidx.appcompat.app.AlertDialog;
-import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
@@ -19,18 +17,18 @@ import com.ironsource.adapters.supersonicads.SupersonicConfig;
 import com.ironsource.mediationsdk.ISBannerSize;
 import com.ironsource.mediationsdk.IronSource;
 import com.ironsource.mediationsdk.IronSourceBannerLayout;
+import com.ironsource.mediationsdk.adunit.adapter.utility.AdInfo;
 import com.ironsource.mediationsdk.impressionData.ImpressionData;
 import com.ironsource.mediationsdk.impressionData.ImpressionDataListener;
 import com.ironsource.mediationsdk.integration.IntegrationHelper;
 import com.ironsource.mediationsdk.logger.IronSourceError;
 import com.ironsource.mediationsdk.model.Placement;
-import com.ironsource.mediationsdk.sdk.BannerListener;
-import com.ironsource.mediationsdk.sdk.InterstitialListener;
-import com.ironsource.mediationsdk.sdk.OfferwallListener;
-import com.ironsource.mediationsdk.sdk.RewardedVideoListener;
+import com.ironsource.mediationsdk.sdk.LevelPlayBannerListener;
+import com.ironsource.mediationsdk.sdk.LevelPlayInterstitialListener;
+import com.ironsource.mediationsdk.sdk.LevelPlayRewardedVideoListener;
 import com.ironsource.mediationsdk.utils.IronSourceUtils;
 
-public class DemoActivity extends Activity implements RewardedVideoListener, OfferwallListener, InterstitialListener, ImpressionDataListener {
+public class DemoActivity extends Activity implements LevelPlayRewardedVideoListener, LevelPlayInterstitialListener, ImpressionDataListener {
 
     private final String TAG = "DemoActivity";
     // TODO find your app key in IronSource portal
@@ -70,20 +68,18 @@ public class DemoActivity extends Activity implements RewardedVideoListener, Off
     private void initIronSource(String appKey, String userId) {
         // Be sure to set a listener to each product that is being initiated
         // set the IronSource rewarded video listener
-        IronSource.setRewardedVideoListener(this);
-        // set the IronSource offerwall listener
-        IronSource.setOfferwallListener(this);
+        IronSource.setLevelPlayRewardedVideoListener(this);
         // set client side callbacks for the offerwall
         SupersonicConfig.getConfigObj().setClientSideCallbacks(true);
         // set the interstitial listener
-        IronSource.setInterstitialListener(this);
+        IronSource.setLevelPlayInterstitialListener(this);
         // add the Impression Data listener
         IronSource.addImpressionDataListener(this);
 
         // set the IronSource user id
         IronSource.setUserId(userId);
         // init the IronSource SDK
-        IronSource.init(this, appKey);
+        IronSource.init(this, appKey, IronSource.AD_UNIT.INTERSTITIAL, IronSource.AD_UNIT.REWARDED_VIDEO, IronSource.AD_UNIT.BANNER);
 
         updateButtonsState();
 
@@ -113,7 +109,7 @@ public class DemoActivity extends Activity implements RewardedVideoListener, Off
      */
     private void updateButtonsState() {
             handleVideoButtonState(IronSource.isRewardedVideoAvailable());
-            handleOfferwallButtonState(IronSource.isOfferwallAvailable());
+            handleOfferwallButtonState(false);
             handleLoadInterstitialButtonState(true);
             handleInterstitialShowButtonState(false);
 
@@ -124,53 +120,37 @@ public class DemoActivity extends Activity implements RewardedVideoListener, Off
     /**
      * initialize the UI elements of the activity
      */
+    @SuppressLint("SetTextI18n")
     private void initUIElements() {
-        mVideoButton = (Button) findViewById(R.id.rv_button);
-        mVideoButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                    // check if video is available
-                    if (IronSource.isRewardedVideoAvailable())
-                        //show rewarded video
-                        IronSource.showRewardedVideo();
+        mVideoButton = findViewById(R.id.rv_button);
+        mVideoButton.setOnClickListener(view -> {
+                // check if video is available
+                if (IronSource.isRewardedVideoAvailable())
+                    //show rewarded video
+                    IronSource.showRewardedVideo();
+        });
+
+        mOfferwallButton = findViewById(R.id.ow_button);
+        mOfferwallButton.setOnClickListener(view -> {
+        });
+
+        mInterstitialLoadButton = findViewById(R.id.is_button_1);
+        mInterstitialLoadButton.setOnClickListener(view -> IronSource.loadInterstitial());
+
+
+        mInterstitialShowButton = findViewById(R.id.is_button_2);
+        mInterstitialShowButton.setOnClickListener(view -> {
+                // check if interstitial is available
+                if (IronSource.isInterstitialReady()) {
+                    //show the interstitial
+                    IronSource.showInterstitial();
             }
         });
 
-        mOfferwallButton = (Button) findViewById(R.id.ow_button);
-        mOfferwallButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                    //show the offerwall
-                    if (IronSource.isOfferwallAvailable())
-                        IronSource.showOfferwall();
-            }
-        });
-
-        mInterstitialLoadButton = (Button) findViewById(R.id.is_button_1);
-        mInterstitialLoadButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                IronSource.loadInterstitial();
-            }
-        });
-
-
-        mInterstitialShowButton = (Button) findViewById(R.id.is_button_2);
-        mInterstitialShowButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                    // check if interstitial is available
-                    if (IronSource.isInterstitialReady()) {
-                        //show the interstitial
-                        IronSource.showInterstitial();
-                }
-            }
-        });
-
-        TextView versionTV = (TextView) findViewById(R.id.version_txt);
+        TextView versionTV = findViewById(R.id.version_txt);
         versionTV.setText(getResources().getString(R.string.version) + " " + IronSourceUtils.getSDKVersion());
 
-        mBannerParentLayout = (FrameLayout) findViewById(R.id.banner_footer);
+        mBannerParentLayout = findViewById(R.id.banner_footer);
     }
 
 
@@ -192,37 +172,37 @@ public class DemoActivity extends Activity implements RewardedVideoListener, Off
 
         if (mIronSourceBannerLayout != null) {
             // set the banner listener
-            mIronSourceBannerLayout.setBannerListener(new BannerListener() {
+            mIronSourceBannerLayout.setLevelPlayBannerListener(new LevelPlayBannerListener() {
                 @Override
-                public void onBannerAdLoaded() {
-                    Log.d(TAG, "onBannerAdLoaded");
+                public void onAdLoaded(AdInfo adInfo) {
+                    Log.d(TAG, "onAdLoaded");
                     // since banner container was "gone" by default, we need to make it visible as soon as the banner is ready
                     mBannerParentLayout.setVisibility(View.VISIBLE);
                 }
 
                 @Override
-                public void onBannerAdLoadFailed(IronSourceError error) {
-                    Log.d(TAG, "onBannerAdLoadFailed" + " " + error);
+                public void onAdLoadFailed(IronSourceError ironSourceError) {
+                    Log.d(TAG, "onAdLoadFailed" + " " + ironSourceError.getErrorMessage());
                 }
 
                 @Override
-                public void onBannerAdClicked() {
-                    Log.d(TAG, "onBannerAdClicked");
+                public void onAdClicked(AdInfo adInfo) {
+                    Log.d(TAG, "onAdLoaded");
                 }
 
                 @Override
-                public void onBannerAdScreenPresented() {
-                    Log.d(TAG, "onBannerAdScreenPresented");
+                public void onAdLeftApplication(AdInfo adInfo) {
+                    Log.d(TAG, "onAdLeftApplication");
                 }
 
                 @Override
-                public void onBannerAdScreenDismissed() {
-                    Log.d(TAG, "onBannerAdScreenDismissed");
+                public void onAdScreenPresented(AdInfo adInfo) {
+                    Log.d(TAG, "onAdScreenPresented");
                 }
 
                 @Override
-                public void onBannerAdLeftApplication() {
-                    Log.d(TAG, "onBannerAdLeftApplication");
+                public void onAdScreenDismissed(AdInfo adInfo) {
+                    Log.d(TAG, "onAdScreenDismissed");
                 }
             });
 
@@ -346,164 +326,42 @@ public class DemoActivity extends Activity implements RewardedVideoListener, Off
         });
     }
 
-    // --------- IronSource Rewarded Video Listener ---------
-
-    @Override
-    public void onRewardedVideoAdOpened() {
-        // called when the video is opened
-        Log.d(TAG, "onRewardedVideoAdOpened");
-    }
-
-    @Override
-    public void onRewardedVideoAdClosed() {
-        // called when the video is closed
-        Log.d(TAG, "onRewardedVideoAdClosed");
-        // here we show a dialog to the user if he was rewarded
-        if (mPlacement != null) {
-            // if the user was rewarded
-            showRewardDialog(mPlacement);
-            mPlacement = null;
-        }
-    }
-
-    @Override
-    public void onRewardedVideoAvailabilityChanged(boolean b) {
-        // called when the video availbility has changed
-        Log.d(TAG, "onRewardedVideoAvailabilityChanged" + " " + b);
-        handleVideoButtonState(b);
-    }
-
-    @Override
-    public void onRewardedVideoAdStarted() {
-        // called when the video has started
-        Log.d(TAG, "onRewardedVideoAdStarted");
-    }
-
-    @Override
-    public void onRewardedVideoAdEnded() {
-        // called when the video has ended
-        Log.d(TAG, "onRewardedVideoAdEnded");
-    }
-
-    @Override
-    public void onRewardedVideoAdRewarded(Placement placement) {
-        // called when the video has been rewarded and a reward can be given to the user
-        Log.d(TAG, "onRewardedVideoAdRewarded" + " " + placement);
-        mPlacement = placement;
-
-    }
-
-    @Override
-    public void onRewardedVideoAdShowFailed(IronSourceError ironSourceError) {
-        // called when the video has failed to show
-        // you can get the error data by accessing the IronSourceError object
-        // IronSourceError.getErrorCode();
-        // IronSourceError.getErrorMessage();
-        Log.d(TAG, "onRewardedVideoAdShowFailed" + " " + ironSourceError);
-    }
-
-    @Override
-    public void onRewardedVideoAdClicked(Placement placement) {
-        
-    }
-
-    // --------- IronSource Offerwall Listener ---------
-
-    @Override
-    public void onOfferwallAvailable(boolean available) {
-        handleOfferwallButtonState(available);
-    }
-
-    @Override
-    public void onOfferwallOpened() {
-        // called when the offerwall has opened
-        Log.d(TAG, "onOfferwallOpened");
-    }
-
-    @Override
-    public void onOfferwallShowFailed(IronSourceError ironSourceError) {
-        // called when the offerwall failed to show
-        // you can get the error data by accessing the IronSourceError object
-         ironSourceError.getErrorCode();
-         ironSourceError.getErrorMessage();
-        Log.d(TAG, "onOfferwallShowFailed" + " " + ironSourceError);
-    }
-
-    @Override
-    public boolean onOfferwallAdCredited(int credits, int totalCredits, boolean totalCreditsFlag) {
-        Log.d(TAG, "onOfferwallAdCredited" + " credits:" + credits + " totalCredits:" + totalCredits + " totalCreditsFlag:" + totalCreditsFlag);
-        return false;
-    }
-
-    @Override
-    public void onGetOfferwallCreditsFailed(IronSourceError ironSourceError) {
-        // you can get the error data by accessing the IronSourceError object
-        // IronSourceError.getErrorCode();
-        // IronSourceError.getErrorMessage();
-        Log.d(TAG, "onGetOfferwallCreditsFailed" + " " + ironSourceError);
-    }
-
-    @Override
-    public void onOfferwallClosed() {
-        // called when the offerwall has closed
-        Log.d(TAG, "onOfferwallClosed");
-    }
-
     // --------- IronSource Interstitial Listener ---------
 
     @Override
-    public void onInterstitialAdClicked() {
-        // called when the interstitial has been clicked
-        Log.d(TAG, "onInterstitialAdClicked");
-    }
-
-    @Override
-    public void onInterstitialAdReady() {
+    public void onAdReady(AdInfo adInfo) {
         // called when the interstitial is ready
-        Log.d(TAG, "onInterstitialAdReady");
+        Log.d(TAG, "onAdReady");
         handleInterstitialShowButtonState(true);
     }
 
     @Override
-    public void onInterstitialAdLoadFailed(IronSourceError ironSourceError) {
-        // called when the interstitial has failed to load
-        // you can get the error data by accessing the IronSourceError object
-//         IronSourceError.getErrorCode();
-//         IronSourceError.getErrorMessage();
-        Log.d(TAG, "onInterstitialAdLoadFailed" + " " + ironSourceError);
-        handleInterstitialShowButtonState(false);
-    }
-
-    @Override
-    public void onInterstitialAdOpened() {
-        // called when the interstitial is shown
-        Log.d(TAG, "onInterstitialAdOpened");
-    }
-
-    @Override
-    public void onInterstitialAdClosed() {
-        // called when the interstitial has been closed
-        Log.d(TAG, "onInterstitialAdClosed");
-        handleInterstitialShowButtonState(false);
-    }
-
-    @Override
-    public void onInterstitialAdShowSucceeded() {
-        // called when the interstitial has been successfully shown
-        Log.d(TAG, "onInterstitialAdShowSucceeded");
-    }
-
-    @Override
-    public void onInterstitialAdShowFailed(IronSourceError ironSourceError) {
+    public void onAdLoadFailed(IronSourceError ironSourceError) {
         // called when the interstitial has failed to show
         // you can get the error data by accessing the IronSourceError object
         // IronSourceError.getErrorCode();
         // IronSourceError.getErrorMessage();
         Log.d(TAG, "onInterstitialAdShowFailed" + " " + ironSourceError);
-        handleInterstitialShowButtonState(false)  ;
+        handleInterstitialShowButtonState(false);
+    }
+
+    @Override
+    public void onAdOpened(AdInfo adInfo) {
+        Log.d(TAG, "onAdOpened");
+    }
+
+    @Override
+    public void onAdClicked(AdInfo adInfo) {
+        Log.d(TAG, "onAdClicked");
+    }
+
+    @Override
+    public void onAdShowSucceeded(AdInfo adInfo) {
+        Log.d(TAG, "onAdShowSucceeded");
     }
 
     // --------- Impression Data Listener ---------
+
     @Override
     public void onImpressionSuccess(ImpressionData impressionData) {
         // The onImpressionSuccess will be reported when the rewarded video and interstitial ad is opened.
@@ -527,6 +385,52 @@ public class DemoActivity extends Activity implements RewardedVideoListener, Off
         dialog.show();
     }
 
+    // --------- IronSource Rewarded Video Listener ---------
 
+    @Override
+    public void onAdAvailable(AdInfo adInfo) {
+        // called when the video availability has changed
+        Log.d(TAG, "onAdAvailable");
+        handleVideoButtonState(true);
+    }
 
+    @Override
+    public void onAdUnavailable() {
+        // called when the video availability has changed
+        Log.d(TAG, "onAdUnavailable");
+        handleVideoButtonState(false);
+    }
+
+    @Override
+    public void onAdShowFailed(IronSourceError ironSourceError, AdInfo adInfo) {
+        // called when the video has failed to show
+        // you can get the error data by accessing the IronSourceError object
+        // IronSourceError.getErrorCode();
+        // IronSourceError.getErrorMessage();
+        Log.d(TAG, "onAdShowFailed" + " " + ironSourceError);
+    }
+
+    @Override
+    public void onAdClicked(Placement placement, AdInfo adInfo) {
+        Log.d(TAG, "onAdClicked");
+    }
+
+    @Override
+    public void onAdRewarded(Placement placement, AdInfo adInfo) {
+        // called when the video has been rewarded and a reward can be given to the user
+        Log.d(TAG, "onAdRewarded" + " " + placement);
+        mPlacement = placement;
+    }
+
+    @Override
+    public void onAdClosed(AdInfo adInfo) {
+        // called when the video is closed
+        Log.d(TAG, "onAdClosed");
+        // here we show a dialog to the user if he was rewarded
+        if (mPlacement != null) {
+            // if the user was rewarded
+            showRewardDialog(mPlacement);
+            mPlacement = null;
+        }
+    }
 }
