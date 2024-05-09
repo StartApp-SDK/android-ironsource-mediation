@@ -1,5 +1,7 @@
 package com.ironsource.ironsourcesdkdemo;
 
+import static com.ironsource.ironsourcesdkdemo.BuildConfig.DEBUG;
+
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.DialogInterface;
@@ -27,6 +29,7 @@ import com.ironsource.mediationsdk.sdk.LevelPlayBannerListener;
 import com.ironsource.mediationsdk.sdk.LevelPlayInterstitialListener;
 import com.ironsource.mediationsdk.sdk.LevelPlayRewardedVideoListener;
 import com.ironsource.mediationsdk.utils.IronSourceUtils;
+import com.startapp.sdk.adsbase.StartAppSDK;
 
 public class DemoActivity extends Activity implements LevelPlayRewardedVideoListener, LevelPlayInterstitialListener, ImpressionDataListener {
 
@@ -48,6 +51,10 @@ public class DemoActivity extends Activity implements LevelPlayRewardedVideoList
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_demo);
+
+        if (DEBUG) {
+            StartAppSDK.setTestAdsEnabled(true);
+        }
 
         //The integrationHelper is used to validate the integration. Remove the integrationHelper before going live!
         IntegrationHelper.validateIntegration(this);
