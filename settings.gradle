@@ -1,0 +1,4 @@
+rootProject.name = 'IronSource - Start.io'
+
+include ':adapter'
+include ':example'

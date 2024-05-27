@@ -1,0 +1,29 @@
+plugins {
+    id 'com.android.library'
+}
+
+android {
+    namespace 'com.ironsource.adapters.custom.startapp'
+
+    compileSdk 34
+
+    defaultConfig {
+        minSdk 21
+        targetSdk 34
+    }
+
+    defaultConfig {
+        buildConfigField 'String', 'VERSION_NAME', "\"$VERSION_NAME\""
+    }
+
+    buildFeatures {
+        buildConfig true
+    }
+}
+
+dependencies {
+    api 'com.ironsource.sdk:mediationsdk:[8,9)'
+    api 'com.startapp:inapp-sdk:[5,6)'
+}
+
+apply from: "$rootDir/publish-mavencentral.gradle"

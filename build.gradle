@@ -1,0 +1,22 @@
+buildscript {
+    repositories {
+        google()
+        mavenCentral()
+    }
+
+    dependencies {
+        classpath 'com.android.tools.build:gradle:8.4.1'
+    }
+}
+
+subprojects {
+    repositories {
+        google()
+        mavenCentral()
+        maven { url 'https://android-sdk.is.com' }
+    }
+}
+
+tasks.register('clean', Delete) {
+    delete rootProject.layout.buildDirectory
+}

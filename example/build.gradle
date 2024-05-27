@@ -1,0 +1,24 @@
+plugins {
+    id 'com.android.application'
+}
+
+android {
+    namespace 'com.startapp.mediation.ironsource.example'
+
+    compileSdk 34
+
+    defaultConfig {
+        applicationId 'com.startapp.example.ironsource'
+        minSdk 21
+        targetSdk 34
+        versionCode 1
+        versionName '1.0'
+        multiDexEnabled true
+    }
+}
+
+dependencies {
+    implementation 'androidx.appcompat:appcompat:[1,2)'
+    implementation 'androidx.multidex:multidex:[2,3)'
+    implementation project(':adapter')
+}
