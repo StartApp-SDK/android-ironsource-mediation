@@ -1,5 +1,7 @@
 package com.ironsource.adapters.custom.startapp;
 
+import static com.ironsource.adapters.custom.startapp.StartAppMediationExtras.isValidAdTag;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
@@ -23,7 +25,7 @@ class StartAppCustomAdWrapper {
         this.ad = ad;
         this.extras = extras;
 
-        if (adTag != null) {
+        if (isValidAdTag(adTag)) {
             extras.getAdPreferences().setAdTag(adTag);
         }
     }

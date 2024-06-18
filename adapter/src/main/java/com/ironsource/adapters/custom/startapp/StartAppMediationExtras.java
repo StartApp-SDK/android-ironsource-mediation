@@ -71,7 +71,7 @@ public class StartAppMediationExtras {
         Boolean is3DBanner = Boolean.parseBoolean((String) customEventExtras.get(IS_3D_BANNER));
         if (customEventExtras.containsKey(MIN_CPM) && customEventExtras.get(MIN_CPM) != null) {
             try {
-                Double minCPM =  Double.parseDouble((String) Objects.requireNonNull(customEventExtras.get(MIN_CPM)));
+                Double minCPM = Double.parseDouble((String) Objects.requireNonNull(customEventExtras.get(MIN_CPM)));
                 bundle.putDouble(MIN_CPM, minCPM);
             } catch (Exception e) {
                 //ignore
@@ -204,7 +204,10 @@ public class StartAppMediationExtras {
             prefs = new AdPreferences();
         }
 
-        prefs.setAdTag(adTag);
+        if (isValidAdTag(adTag)) {
+            prefs.setAdTag(adTag);
+        }
+
         prefs.setMinCpm(minCPM);
 
         if (isVideoMuted) {
@@ -224,6 +227,23 @@ public class StartAppMediationExtras {
         }
 
         return prefs;
+    }
+
+    @SuppressWarnings("RedundantIfStatement")
+    public static boolean isValidAdTag(@Nullable String adTag) {
+        if (adTag == null) {
+            return false;
+        }
+
+        if (adTag.trim().isEmpty()) {
+            return false;
+        }
+
+        if (adTag.equals("default")) {
+            return false;
+        }
+
+        return true;
     }
 
     public static class Builder {
