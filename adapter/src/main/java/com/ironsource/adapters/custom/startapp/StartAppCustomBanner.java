@@ -50,8 +50,13 @@ public class StartAppCustomBanner extends BaseBanner<StartAppCustomAdapter> {
         final Context context = activity;
         final int adWidthDp, adHeightDp;
 
-        adWidthDp = bannerSize.getWidth();
-        adHeightDp = bannerSize.getHeight();
+        if (bannerSize.getWidth() > 0 && bannerSize.getHeight() > 0) {
+            adWidthDp = bannerSize.getWidth();
+            adHeightDp = bannerSize.getHeight();
+        } else {
+            adWidthDp = ISBannerSize.BANNER.getWidth();
+            adHeightDp = ISBannerSize.BANNER.getHeight();
+        }
 
         if (DEBUG) {
             Log.d(LOG_TAG, "loadBannerAd: " + bannerSize + " => " + adWidthDp + "x" + adHeightDp +
