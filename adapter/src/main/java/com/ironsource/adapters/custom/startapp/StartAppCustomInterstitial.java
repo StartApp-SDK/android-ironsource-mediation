@@ -27,6 +27,7 @@ import com.startapp.sdk.adsbase.adlisteners.AdDisplayListener;
 import com.startapp.sdk.adsbase.adlisteners.AdEventListener;
 
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.Map;
 
 @Keep
@@ -100,14 +101,15 @@ public class StartAppCustomInterstitial extends BaseInterstitial<StartAppCustomA
 
             @Override
             public void onFailedToReceiveAd(@Nullable Ad ad) {
-                AdapterErrorType errorType = ADAPTER_ERROR_TYPE_INTERNAL;
                 String errorMessage = ad != null ? ad.getErrorMessage() : null;
 
-                if ("NO FILL".equals(errorMessage)) {
-                    errorType = ADAPTER_ERROR_TYPE_NO_FILL;
-                }
+                boolean noFill = errorMessage != null
+                        && (errorMessage.contains("204") || errorMessage.toLowerCase(Locale.ENGLISH).contains("no fill"));
 
-                listener.onAdLoadFailed(errorType, ADAPTER_ERROR_INTERNAL, errorMessage);
+                listener.onAdLoadFailed(
+                        noFill ? ADAPTER_ERROR_TYPE_NO_FILL : ADAPTER_ERROR_TYPE_INTERNAL,
+                        ADAPTER_ERROR_INTERNAL,
+                        errorMessage);
             }
         });
     }

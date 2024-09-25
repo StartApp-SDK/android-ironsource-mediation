@@ -26,6 +26,8 @@ import com.startapp.sdk.ads.banner.BannerFormat;
 import com.startapp.sdk.ads.banner.BannerListener;
 import com.startapp.sdk.ads.banner.BannerRequest;
 
+import java.util.Locale;
+
 public class StartAppCustomBanner extends BaseBanner<StartAppCustomAdapter> {
     private static final String LOG_TAG = StartAppCustomBanner.class.getSimpleName();
 
@@ -130,7 +132,13 @@ public class StartAppCustomBanner extends BaseBanner<StartAppCustomAdapter> {
                                 Log.w(LOG_TAG, "loadBannerAd: onFinished: error: " + error);
                             }
 
-                            bannerAdListener.onAdLoadFailed(ADAPTER_ERROR_TYPE_INTERNAL, ADAPTER_ERROR_INTERNAL, error);
+                            boolean noFill = error != null
+                                    && (error.contains("204") || error.toLowerCase(Locale.ENGLISH).contains("no fill"));
+
+                            bannerAdListener.onAdLoadFailed(
+                                    noFill ? ADAPTER_ERROR_TYPE_NO_FILL : ADAPTER_ERROR_TYPE_INTERNAL,
+                                    ADAPTER_ERROR_INTERNAL,
+                                    error);
                         }
                     }
                 });
