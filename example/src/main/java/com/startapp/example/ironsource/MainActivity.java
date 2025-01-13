@@ -28,6 +28,13 @@ import com.ironsource.mediationsdk.sdk.LevelPlayRewardedVideoManualListener;
 import com.ironsource.mediationsdk.utils.IronSourceUtils;
 import com.startapp.mediation.ironsource.example.R;
 import com.startapp.sdk.adsbase.StartAppSDK;
+import com.unity3d.mediation.LevelPlay;
+import com.unity3d.mediation.LevelPlayConfiguration;
+import com.unity3d.mediation.LevelPlayInitError;
+import com.unity3d.mediation.LevelPlayInitListener;
+import com.unity3d.mediation.LevelPlayInitRequest;
+
+import java.util.Arrays;
 
 public class MainActivity extends AppCompatActivity {
     private static final String LOG_TAG = MainActivity.class.getSimpleName();
@@ -114,12 +121,26 @@ public class MainActivity extends AppCompatActivity {
 
                 initListeners();
 
-                IronSource.init(this, getString(R.string.app_key), () -> {
-                    initialized.postValue(true);
+                LevelPlay.init(getApplicationContext(), new LevelPlayInitRequest.Builder(getString(R.string.app_key))
+                        .withLegacyAdFormats(Arrays.asList(
+                                LevelPlay.AdFormat.INTERSTITIAL,
+                                LevelPlay.AdFormat.REWARDED,
+                                LevelPlay.AdFormat.BANNER
+                        ))
+                        .build(), new LevelPlayInitListener() {
+                    @Override
+                    public void onInitFailed(@NonNull LevelPlayInitError error) {
+                        Toast.makeText(getApplicationContext(), String.valueOf(error), Toast.LENGTH_SHORT).show();
+                    }
 
-                    // TODO remove this line in production
-                    StartAppSDK.setTestAdsEnabled(true);
-                }, IronSource.AD_UNIT.INTERSTITIAL, IronSource.AD_UNIT.REWARDED_VIDEO, IronSource.AD_UNIT.BANNER);
+                    @Override
+                    public void onInitSuccess(@NonNull LevelPlayConfiguration configuration) {
+                        initialized.postValue(true);
+
+                        // TODO remove this line in production
+                        StartAppSDK.setTestAdsEnabled(true);
+                    }
+                });
             } else if (value) {
                 interstitialLiveData.setValue(null);
                 rewardedLiveData.setValue(null);

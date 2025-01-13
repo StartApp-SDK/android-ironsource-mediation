@@ -11,10 +11,21 @@
 
 4. Add dependency on Start.Io IronSource Mediation library
 
+If your project depends on `com.ironsource.sdk:mediationsdk` then use:
+
 ```
 dependencies {
     // noinspection GradleDependency
     implementation 'com.startapp:ironsource-mediation:2.+'
+}
+```
+
+If your project depends on `com.unity3d.ads-mediation:mediation-sdk` then use:
+
+```
+dependencies {
+    // noinspection GradleDependency
+    implementation 'com.startapp:unity-ads-mediation:2.+'
 }
 ```
 
