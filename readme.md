@@ -43,7 +43,7 @@ Use network key value: `15b99c96d`
 
 ![Custom Adapter](images/04.png)
 
-7. Set your App ID, and field **Ad Tag**. This field is mandatory, but if you don't want to use it, you can set value **default**.
+7. Set your App ID, fields **Instance name** and **Ad Tag**. These fields are mandatory, but if you don't want to use it, you can use value **default** for them.
 
 ![Interstitial setup](images/05.png)
 
