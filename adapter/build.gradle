@@ -5,15 +5,15 @@ plugins {
 android {
     namespace 'com.ironsource.adapters.custom.startapp'
 
-    compileSdk 34
+    compileSdk 36
 
     defaultConfig {
         minSdk 21
-        targetSdk 34
+        targetSdk 36
     }
 
     defaultConfig {
-        buildConfigField 'String', 'VERSION_NAME', "\"$VERSION_NAME\""
+        buildConfigField 'String', 'VERSION_NAME', "\"$versionName\""
     }
 
     buildFeatures {
@@ -22,8 +22,8 @@ android {
 }
 
 dependencies {
-    api 'com.ironsource.sdk:mediationsdk:[8.1,9)'
-    api 'com.startapp:inapp-sdk:[5.0.1,6)'
+    api 'com.unity3d.ads-mediation:mediation-sdk:[8.9,9)'
+    api 'com.startapp:inapp-sdk:[5.2.2,6)'
 }
 
-apply from: "$rootDir/publish-mavencentral.gradle"
+apply from: 'https://raw.githubusercontent.com/StartApp-SDK/sonatype-central-publish/refs/heads/main/sonatype-central-publish.gradle'

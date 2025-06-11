@@ -16,23 +16,23 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.lifecycle.MutableLiveData;
 
-import com.ironsource.mediationsdk.ISBannerSize;
-import com.ironsource.mediationsdk.IronSource;
-import com.ironsource.mediationsdk.IronSourceBannerLayout;
-import com.ironsource.mediationsdk.adunit.adapter.utility.AdInfo;
-import com.ironsource.mediationsdk.logger.IronSourceError;
-import com.ironsource.mediationsdk.model.Placement;
-import com.ironsource.mediationsdk.sdk.LevelPlayBannerListener;
-import com.ironsource.mediationsdk.sdk.LevelPlayInterstitialListener;
-import com.ironsource.mediationsdk.sdk.LevelPlayRewardedVideoManualListener;
-import com.ironsource.mediationsdk.utils.IronSourceUtils;
 import com.startapp.mediation.ironsource.example.R;
 import com.startapp.sdk.adsbase.StartAppSDK;
 import com.unity3d.mediation.LevelPlay;
+import com.unity3d.mediation.LevelPlayAdError;
+import com.unity3d.mediation.LevelPlayAdInfo;
+import com.unity3d.mediation.LevelPlayAdSize;
 import com.unity3d.mediation.LevelPlayConfiguration;
 import com.unity3d.mediation.LevelPlayInitError;
 import com.unity3d.mediation.LevelPlayInitListener;
 import com.unity3d.mediation.LevelPlayInitRequest;
+import com.unity3d.mediation.banner.LevelPlayBannerAdView;
+import com.unity3d.mediation.banner.LevelPlayBannerAdViewListener;
+import com.unity3d.mediation.interstitial.LevelPlayInterstitialAd;
+import com.unity3d.mediation.interstitial.LevelPlayInterstitialAdListener;
+import com.unity3d.mediation.rewarded.LevelPlayReward;
+import com.unity3d.mediation.rewarded.LevelPlayRewardedAd;
+import com.unity3d.mediation.rewarded.LevelPlayRewardedAdListener;
 
 import java.util.Arrays;
 
@@ -47,10 +47,10 @@ public class MainActivity extends AppCompatActivity {
 
     private static final MutableLiveData<Boolean> initialized = new MutableLiveData<>(null);
 
-    private final MutableLiveData<Pair<AdInfo, AdState>> interstitialLiveData = new MutableLiveData<>();
-    private final MutableLiveData<Pair<AdInfo, AdState>> rewardedLiveData = new MutableLiveData<>();
-    private final MutableLiveData<Pair<IronSourceBannerLayout, AdState>> bannerLiveData = new MutableLiveData<>();
-    private final MutableLiveData<Pair<IronSourceBannerLayout, AdState>> mrecLiveData = new MutableLiveData<>();
+    private final MutableLiveData<Pair<LevelPlayInterstitialAd, AdState>> interstitialLiveData = new MutableLiveData<>();
+    private final MutableLiveData<Pair<LevelPlayRewardedAd, AdState>> rewardedLiveData = new MutableLiveData<>();
+    private final MutableLiveData<Pair<LevelPlayBannerAdView, AdState>> bannerLiveData = new MutableLiveData<>();
+    private final MutableLiveData<Pair<LevelPlayBannerAdView, AdState>> mrecLiveData = new MutableLiveData<>();
 
     private ViewGroup bannerContainer;
     private ViewGroup mrecContainer;
@@ -59,7 +59,7 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(@Nullable Bundle state) {
         super.onCreate(state);
 
-        setTitle("IronSource " + IronSourceUtils.getSDKVersion() + " - Start.io " + StartAppSDK.getVersion());
+        setTitle("LevelPlay " + LevelPlay.getSdkVersion() + " - Start.io " + StartAppSDK.getVersion());
 
         setContentView(R.layout.activity_main);
 
@@ -119,8 +119,6 @@ public class MainActivity extends AppCompatActivity {
             if (value == null) {
                 initialized.setValue(false);
 
-                initListeners();
-
                 LevelPlay.init(getApplicationContext(), new LevelPlayInitRequest.Builder(getString(R.string.app_key))
                         .withLegacyAdFormats(Arrays.asList(
                                 LevelPlay.AdFormat.INTERSTITIAL,
@@ -130,6 +128,8 @@ public class MainActivity extends AppCompatActivity {
                         .build(), new LevelPlayInitListener() {
                     @Override
                     public void onInitFailed(@NonNull LevelPlayInitError error) {
+                        Log.e(LOG_TAG, "onCreate: onInitFailed: " + error);
+
                         Toast.makeText(getApplicationContext(), String.valueOf(error), Toast.LENGTH_SHORT).show();
                     }
 
@@ -148,11 +148,6 @@ public class MainActivity extends AppCompatActivity {
                 mrecLiveData.setValue(null);
             }
         });
-    }
-
-    private void initListeners() {
-        initInterstitialListener();
-        initRewardedListener();
     }
 
     private static boolean isInitialized() {
@@ -176,14 +171,14 @@ public class MainActivity extends AppCompatActivity {
     private void loadBanner(@NonNull View view) {
         int heightPx = getResources().getDimensionPixelSize(R.dimen.banner_height);
         ViewGroup.LayoutParams layoutParams = new FrameLayout.LayoutParams(MATCH_PARENT, heightPx, Gravity.CENTER);
-        loadAdView(ISBannerSize.BANNER, layoutParams, bannerLiveData);
+        loadAdView(LevelPlayAdSize.BANNER, getString(R.string.banner_ad_unit_id), layoutParams, bannerLiveData);
     }
 
     private void loadMrec(@NonNull View view) {
         int widthPx = getResources().getDimensionPixelSize(R.dimen.mrec_width);
         int heightPx = getResources().getDimensionPixelSize(R.dimen.mrec_height);
         ViewGroup.LayoutParams layoutParams = new FrameLayout.LayoutParams(widthPx, heightPx, Gravity.CENTER);
-        loadAdView(ISBannerSize.RECTANGLE, layoutParams, mrecLiveData);
+        loadAdView(LevelPlayAdSize.MEDIUM_RECTANGLE, getString(R.string.mrec_ad_unit_id), layoutParams, mrecLiveData);
     }
 
     private void showBanner(@NonNull View view) {
@@ -202,15 +197,19 @@ public class MainActivity extends AppCompatActivity {
         hideAdView(mrecLiveData, mrecContainer);
     }
 
-    private void loadAdView(@NonNull ISBannerSize size, @NonNull ViewGroup.LayoutParams layoutParams, @NonNull MutableLiveData<Pair<IronSourceBannerLayout, AdState>> liveData) {
-        IronSourceBannerLayout banner = IronSource.createBanner(this, size);
-        banner.setLevelPlayBannerListener(new LevelPlayBannerListener() {
+    private void loadAdView(@NonNull LevelPlayAdSize size, @NonNull String adUnitId, @NonNull ViewGroup.LayoutParams layoutParams, @NonNull MutableLiveData<Pair<LevelPlayBannerAdView, AdState>> liveData) {
+        LevelPlayBannerAdView.Config adConfig = new LevelPlayBannerAdView.Config.Builder()
+                .setAdSize(size)
+                .build();
+
+        LevelPlayBannerAdView banner = new LevelPlayBannerAdView(this, adUnitId, adConfig);
+        banner.setBannerListener(new LevelPlayBannerAdViewListener() {
             @Override
-            public void onAdLoaded(AdInfo adInfo) {
+            public void onAdLoaded(@NonNull LevelPlayAdInfo adInfo) {
                 Log.v(LOG_TAG, "onAdLoaded: " + adInfo);
 
                 runOnUiThread(() -> {
-                    Pair<IronSourceBannerLayout, AdState> pair = liveData.getValue();
+                    Pair<LevelPlayBannerAdView, AdState> pair = liveData.getValue();
 
                     if (pair == null || pair.second == AdState.LOADING) {
                         liveData.setValue(new Pair<>(banner, AdState.IDLE));
@@ -219,41 +218,21 @@ public class MainActivity extends AppCompatActivity {
             }
 
             @Override
-            public void onAdLoadFailed(IronSourceError error) {
+            public void onAdLoadFailed(@NonNull LevelPlayAdError error) {
                 Log.v(LOG_TAG, "onAdLoadFailed: " + error);
 
                 liveData.postValue(null);
-            }
-
-            @Override
-            public void onAdClicked(AdInfo adInfo) {
-                Log.v(LOG_TAG, "onAdClicked: " + adInfo);
-            }
-
-            @Override
-            public void onAdScreenPresented(AdInfo adInfo) {
-                Log.v(LOG_TAG, "onAdScreenPresented: " + adInfo);
-            }
-
-            @Override
-            public void onAdScreenDismissed(AdInfo adInfo) {
-                Log.v(LOG_TAG, "onAdScreenDismissed: " + adInfo);
-            }
-
-            @Override
-            public void onAdLeftApplication(AdInfo adInfo) {
-                Log.v(LOG_TAG, "onAdLeftApplication: " + adInfo);
             }
         });
 
         liveData.setValue(new Pair<>(null, AdState.LOADING));
 
         banner.setLayoutParams(layoutParams);
-        IronSource.loadBanner(banner);
+        banner.loadAd();
     }
 
-    private void showAdView(@NonNull MutableLiveData<Pair<IronSourceBannerLayout, AdState>> liveData, @NonNull ViewGroup container) {
-        Pair<IronSourceBannerLayout, AdState> pair = liveData.getValue();
+    private void showAdView(@NonNull MutableLiveData<Pair<LevelPlayBannerAdView, AdState>> liveData, @NonNull ViewGroup container) {
+        Pair<LevelPlayBannerAdView, AdState> pair = liveData.getValue();
         if (pair != null && pair.first != null) {
             container.removeAllViews();
             container.addView(pair.first);
@@ -263,12 +242,12 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    private void hideAdView(@NonNull MutableLiveData<Pair<IronSourceBannerLayout, AdState>> liveData, @NonNull ViewGroup container) {
+    private void hideAdView(@NonNull MutableLiveData<Pair<LevelPlayBannerAdView, AdState>> liveData, @NonNull ViewGroup container) {
         container.removeAllViews();
 
-        Pair<IronSourceBannerLayout, AdState> pair = liveData.getValue();
-        if (pair != null) {
-            IronSource.destroyBanner(pair.first);
+        Pair<LevelPlayBannerAdView, AdState> pair = liveData.getValue();
+        if (pair != null && pair.first != null) {
+            pair.first.destroy();
         }
 
         liveData.setValue(new Pair<>(null, AdState.IDLE));
@@ -278,62 +257,49 @@ public class MainActivity extends AppCompatActivity {
 
     // region Interstitial
 
-    private void initInterstitialListener() {
-        IronSource.setLevelPlayInterstitialListener(new LevelPlayInterstitialListener() {
-            @Override
-            public void onAdReady(AdInfo adInfo) {
-                Log.v(LOG_TAG, "onAdReady: " + adInfo);
+    private void loadInterstitial(@NonNull View view) {
+        loadInterstitial(getString(R.string.interstitial_ad_unit_id));
+    }
 
-                interstitialLiveData.setValue(new Pair<>(adInfo, AdState.IDLE));
+    private void loadInterstitial(@NonNull String adUnitId) {
+        interstitialLiveData.setValue(new Pair<>(null, AdState.LOADING));
+
+        LevelPlayInterstitialAd localAd = new LevelPlayInterstitialAd(adUnitId);
+        localAd.setListener(new LevelPlayInterstitialAdListener() {
+            @Override
+            public void onAdLoaded(@NonNull LevelPlayAdInfo adInfo) {
+                Log.v(LOG_TAG, "onAdLoaded: " + adInfo);
+
+                interstitialLiveData.setValue(new Pair<>(localAd, AdState.IDLE));
             }
 
             @Override
-            public void onAdLoadFailed(IronSourceError error) {
+            public void onAdLoadFailed(@NonNull LevelPlayAdError error) {
                 Log.v(LOG_TAG, "onAdLoadFailed: " + error);
 
                 interstitialLiveData.setValue(null);
             }
 
+            // TODO unfortunately, this method is never called by LevelPlay
+            //      thus we'll call interstitialLiveData.setValue(null) right after .showAd()
             @Override
-            public void onAdOpened(AdInfo adInfo) {
-                Log.v(LOG_TAG, "onAdOpened: " + adInfo);
+            public void onAdDisplayed(@NonNull LevelPlayAdInfo adInfo) {
+                Log.v(LOG_TAG, "onAdDisplayed");
 
                 interstitialLiveData.setValue(null);
-            }
-
-            @Override
-            public void onAdClosed(AdInfo adInfo) {
-                Log.v(LOG_TAG, "onAdClosed: " + adInfo);
-            }
-
-            @Override
-            public void onAdShowFailed(IronSourceError error, AdInfo adInfo) {
-                Log.v(LOG_TAG, "onAdShowFailed: " + adInfo + ", " + error);
-
-                interstitialLiveData.setValue(null);
-            }
-
-            @Override
-            public void onAdClicked(AdInfo adInfo) {
-                Log.v(LOG_TAG, "onAdClicked: " + adInfo);
-            }
-
-            @Override
-            public void onAdShowSucceeded(AdInfo adInfo) {
-                Log.v(LOG_TAG, "onAdShowSucceeded: " + adInfo);
             }
         });
-    }
 
-    private void loadInterstitial(@NonNull View view) {
-        interstitialLiveData.setValue(new Pair<>(null, AdState.LOADING));
-        IronSource.loadInterstitial();
+        localAd.loadAd();
     }
 
     public void showInterstitial(@NonNull View view) {
-        Pair<AdInfo, AdState> pair = interstitialLiveData.getValue();
+        Pair<LevelPlayInterstitialAd, AdState> pair = interstitialLiveData.getValue();
         if (pair != null && pair.first != null) {
-            IronSource.showInterstitial(this);
+            pair.first.showAd(this);
+
+            // TODO see a comment for onAdDisplayed()
+            interstitialLiveData.setValue(null);
         } else {
             Toast.makeText(this, "Interstitial is not ready", Toast.LENGTH_SHORT).show();
         }
@@ -343,64 +309,55 @@ public class MainActivity extends AppCompatActivity {
 
     // region Rewarded
 
-    private void initRewardedListener() {
-        IronSource.setLevelPlayRewardedVideoManualListener(new LevelPlayRewardedVideoManualListener() {
-            @Override
-            public void onAdReady(AdInfo adInfo) {
-                Log.v(LOG_TAG, "onAdReady: " + adInfo);
+    private void loadRewarded(@NonNull View view) {
+        loadRewarded(getString(R.string.rewarded_ad_unit_id));
+    }
 
-                rewardedLiveData.setValue(new Pair<>(adInfo, AdState.IDLE));
+    private void loadRewarded(@NonNull String adUnitId) {
+        rewardedLiveData.setValue(new Pair<>(null, AdState.LOADING));
+
+        LevelPlayRewardedAd localAd = new LevelPlayRewardedAd(adUnitId);
+        localAd.setListener(new LevelPlayRewardedAdListener() {
+            @Override
+            public void onAdLoaded(@NonNull LevelPlayAdInfo adInfo) {
+                Log.v(LOG_TAG, "onAdLoaded: " + adInfo);
+
+                rewardedLiveData.setValue(new Pair<>(localAd, AdState.IDLE));
             }
 
             @Override
-            public void onAdLoadFailed(IronSourceError error) {
+            public void onAdLoadFailed(@NonNull LevelPlayAdError error) {
                 Log.v(LOG_TAG, "onAdLoadFailed: " + error);
 
                 rewardedLiveData.setValue(null);
             }
 
+            // TODO unfortunately, this method is never called by LevelPlay
+            //      thus we'll call rewardedLiveData.setValue(null) right after .showAd()
             @Override
-            public void onAdOpened(AdInfo adInfo) {
-                Log.v(LOG_TAG, "onAdOpened: " + adInfo);
+            public void onAdDisplayed(@NonNull LevelPlayAdInfo adInfo) {
+                Log.v(LOG_TAG, "onAdDisplayed");
 
                 rewardedLiveData.setValue(null);
             }
 
             @Override
-            public void onAdShowFailed(IronSourceError error, AdInfo adInfo) {
-                Log.v(LOG_TAG, "onAdShowFailed: " + error + ", " + adInfo);
-
-                rewardedLiveData.setValue(null);
-            }
-
-            @Override
-            public void onAdClicked(Placement placement, AdInfo adInfo) {
-                Log.v(LOG_TAG, "onAdClicked: " + placement + ", " + adInfo);
-            }
-
-            @Override
-            public void onAdRewarded(Placement placement, AdInfo adInfo) {
-                Log.v(LOG_TAG, "onAdRewarded: " + placement + ", " + adInfo);
+            public void onAdRewarded(@NonNull LevelPlayReward reward, @NonNull LevelPlayAdInfo adInfo) {
+                Log.v(LOG_TAG, "onAdRewarded");
 
                 runOnUiThread(() -> Toast.makeText(getApplicationContext(), "User gained a reward", Toast.LENGTH_SHORT).show());
             }
-
-            @Override
-            public void onAdClosed(AdInfo adInfo) {
-                Log.v(LOG_TAG, "onAdClosed: " + adInfo);
-            }
         });
-    }
-
-    private void loadRewarded(@NonNull View view) {
-        rewardedLiveData.setValue(new Pair<>(null, AdState.LOADING));
-        IronSource.loadRewardedVideo();
+        localAd.loadAd();
     }
 
     public void showRewarded(@NonNull View view) {
-        Pair<AdInfo, AdState> pair = rewardedLiveData.getValue();
+        Pair<LevelPlayRewardedAd, AdState> pair = rewardedLiveData.getValue();
         if (pair != null && pair.first != null) {
-            IronSource.showRewardedVideo(this);
+            pair.first.showAd(this);
+
+            // TODO see a comment for onAdDisplayed()
+            rewardedLiveData.setValue(null);
         } else {
             Toast.makeText(this, "Rewarded is not ready", Toast.LENGTH_SHORT).show();
         }

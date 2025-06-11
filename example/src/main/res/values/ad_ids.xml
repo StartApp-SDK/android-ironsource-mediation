@@ -1,4 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_key">20b73174d</string>
+    <string name="interstitial_ad_unit_id">l8evr17clv0t41va</string>
+    <string name="rewarded_ad_unit_id">3sg03wae08b2t3o0</string>
+    <string name="banner_ad_unit_id">tsta9k1ay1uc7atd</string>
+    <string name="mrec_ad_unit_id">08v03cz4nlherj3h</string>
 </resources>

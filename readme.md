@@ -1,4 +1,4 @@
-# Start.io Mediation Adapter for IronSource (Android)
+# Start.io mediation adapter for Unity LevelPlay (IronSource)
 
 ## Setup Start.io
 
@@ -9,29 +9,20 @@
 
 ## Setup project
 
-4. Add dependency on Start.Io IronSource Mediation library
-
-If your project depends on `com.ironsource.sdk:mediationsdk` then use:
+4. Add dependency
 
 ```
 dependencies {
+    implementation 'com.unity3d.ads-mediation:mediation-sdk:8.9.1'
+
     // noinspection GradleDependency
-    implementation 'com.startapp:ironsource-mediation:2.+'
+    implementation 'io.start:unity-ads-mediation:3.0+'
 }
 ```
 
-If your project depends on `com.unity3d.ads-mediation:mediation-sdk` then use:
+## Setup Unity LevelPlay (IronSource)
 
-```
-dependencies {
-    // noinspection GradleDependency
-    implementation 'com.startapp:unity-ads-mediation:2.+'
-}
-```
-
-## Setup IronSource
-
-5. Register **Start.Io** [custom adapter][3] for your IronSource account.
+5. Register **Start.Io** [custom adapter][3] for your Unity LevelPlay (IronSource) account.
 
 Use network key value: `15b99c96d`
 

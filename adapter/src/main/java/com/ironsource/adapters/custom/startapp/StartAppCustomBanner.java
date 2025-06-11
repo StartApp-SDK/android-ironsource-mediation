@@ -12,6 +12,7 @@ import android.view.Gravity;
 import android.view.View;
 import android.widget.FrameLayout;
 
+import androidx.annotation.Keep;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
@@ -28,6 +29,8 @@ import com.startapp.sdk.ads.banner.BannerRequest;
 
 import java.util.Locale;
 
+@Keep
+@SuppressWarnings("unused")
 public class StartAppCustomBanner extends BaseBanner<StartAppCustomAdapter> {
     private static final String LOG_TAG = StartAppCustomBanner.class.getSimpleName();
 
@@ -44,20 +47,26 @@ public class StartAppCustomBanner extends BaseBanner<StartAppCustomAdapter> {
     }
 
     @Override
-    public void loadAd(@NonNull AdData adData,
-                       @NonNull Activity activity,
-                       @NonNull ISBannerSize bannerSize,
-                       @NonNull BannerAdListener bannerAdListener
+    public void loadAd(
+            @NonNull AdData adData,
+            @NonNull Activity activity,
+            @NonNull ISBannerSize bannerSize,
+            @NonNull BannerAdListener bannerAdListener
     ) {
         final Context context = activity;
         final int adWidthDp, adHeightDp;
+        final BannerFormat adFormat;
 
-        if (bannerSize.getWidth() > 0 && bannerSize.getHeight() > 0) {
-            adWidthDp = bannerSize.getWidth();
-            adHeightDp = bannerSize.getHeight();
+        adWidthDp = bannerSize.getWidth();
+        adHeightDp = bannerSize.getHeight();
+
+        if (adWidthDp == 300 && adHeightDp == 250) {
+            adFormat = BannerFormat.MREC;
+        } else if (adWidthDp >= 320 && adHeightDp >= 50) {
+            adFormat = BannerFormat.BANNER;
         } else {
-            adWidthDp = ISBannerSize.BANNER.getWidth();
-            adHeightDp = ISBannerSize.BANNER.getHeight();
+            bannerAdListener.onAdLoadFailed(ADAPTER_ERROR_TYPE_INTERNAL, ADAPTER_ERROR_INTERNAL, "Unsupported size: " + adWidthDp + "x" + adHeightDp + ", " + bannerSize.getDescription());
+            return;
         }
 
         if (DEBUG) {
@@ -69,11 +78,10 @@ public class StartAppCustomBanner extends BaseBanner<StartAppCustomAdapter> {
         StartAppMediationExtras extras = new StartAppMediationExtras(adData.getConfiguration(), adData.getServerData());
 
         new BannerRequest(context)
-                .setAdFormat(bannerSize.equals(ISBannerSize.RECTANGLE) ? BannerFormat.MREC : BannerFormat.BANNER)
+                .setAdFormat(adFormat)
                 .setAdSize(adWidthDp, adHeightDp)
                 .setAdPreferences(extras.getAdPreferences())
                 .load(new BannerRequest.Callback() {
-
                     @Override
                     public void onFinished(@Nullable BannerCreator creator, @Nullable String error) {
                         if (creator != null) {

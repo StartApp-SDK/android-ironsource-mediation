@@ -1,22 +1,4 @@
-buildscript {
-    repositories {
-        google()
-        mavenCentral()
-    }
-
-    dependencies {
-        classpath 'com.android.tools.build:gradle:8.5.0'
-    }
-}
-
-subprojects {
-    repositories {
-        google()
-        mavenCentral()
-        maven { url 'https://android-sdk.is.com' }
-    }
-}
-
-tasks.register('clean', Delete) {
-    delete rootProject.layout.buildDirectory
+plugins {
+    id 'com.android.application' version '8.9.3' apply false
+    id 'com.android.library' version '8.9.3' apply false
 }
